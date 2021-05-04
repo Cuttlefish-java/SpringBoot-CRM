@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <base th:href="${#request.getContextPath()}+'/'">
+    <link th:href="@{jquery/bootstrap_3.3.0/css/bootstrap.min.css}" type="text/css" rel="stylesheet"/>
+    <link th:href="@{jquery/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css}" type="text/css"
+          rel="stylesheet"/>
+
+    <script type="text/javascript" th:src="@{jquery/jquery-1.11.1-min.js}"></script>
+    <script type="text/javascript" th:src="@{jquery/bootstrap_3.3.0/js/bootstrap.min.js}"></script>
+    <script type="text/javascript"
+            th:src="@{jquery/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js}"></script>
+    <script type="text/javascript"
+            th:src="@{jquery/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <link rel="stylesheet" type="text/css" th:href="@{jquery/bs_pagination/jquery.bs_pagination.min.css}">
+    <script type="text/javascript" th:src="@{jquery/bs_pagination/jquery.bs_pagination.min.js}"></script>
+    <script type="text/javascript" th:src="@{jquery/bs_pagination/en.js}"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            $(".time").datetimepicker({
+                language:  "zh-CN",
+                format: "yyyy-mm-dd hh:ii:ss",//显示格式
+                minView: "month",//设置只显示到月份
+                //initialDate: new Date(),初始化当前日期,不设置默认是今天，如果只new date
+                setDate: new Date(),
+                autoclose: true,//选中自动关闭
+                todayBtn: true, //显示今日按钮
+                clearBtn : true,
+                pickerPosition: "bottom-left"
+            });
+
+
+        });
+
+    </script>
+</head>
+<body>
+<input type="hidden" id="hidden-activityName"/>
+<input type="hidden" id="hidden-activityOwner"/>
+<input type="hidden" id="hidden-activityStartDate"/>
+<input type="hidden" id="hidden-activityEndDate"/>
+<script type="text/javascript" th:inline="javascript">
+    $(function () {
+        pageList(1,10)
+        $("#searchActivity").click(function () {
+            $("#hidden-activityName").val($.trim($("#search-activityName").val()))
+            $("#hidden-activityOwner").val($.trim($("#search-activityOwner").val()))
+            $("#hidden-activityStartDate").val($.trim($("#search-activityStartDate").val()))
+            $("#hidden-activityEndDate").val($.trim($("#search-activityEndDate").val()))
+            pageList(1,$("#activity-pageList").bs_pagination('getOption', 'rowsPerPage'));
+        })
+        $("#createActivity").click(function () {
+            var html = "";
+            $.ajax({
+                url: "settings/user/getUserList",
+                dataType: "json",
+                type: "get",
+                cache:false,
+                success: function (data) {
+                    $.each(data.users, function (i, n) {
+                        html += '<option value=' + n.id + '>' + n.name + '</option>';
+                    })
+                    var id = [[${session.user.getId()}]];
+                    $("#create-activityOwner").html(html);
+                    $("#create-activityOwner").val(id);
+                }
+            })
+            $("#createActivityModal").modal("show")
+        })
+        $("#saveActivity").click(function () {
+            var owner = [[${session.user.getId()}]];
+            var name = $.trim($("#create-activityName").val());
+            var startDate = $.trim($("#create-startTime").val());
+            var endDate = $.trim($("#create-endTime").val());
+            var cost = $.trim($("#create-cost").val());
+            var description = $.trim($("#create-describe").val());
+            $.ajax({
+                url: "workbench/activity/saveActivity",
+                type: "post",
+                data: {
+                    "owner": owner,
+                    "name": name,
+                    "startDate": startDate,
+                    "endDate": endDate,
+                    "cost": cost,
+                    "description": description
+                },
+                success: function (result) {
+                    alert(result)
+                    if (result == "添加成功") {
+                        $("#hidden-activityName").val("")
+                        $("#hidden-activityOwner").val("")
+                        $("#hidden-activityStartDate").val("")
+                        $("#hidden-activityEndDate").val("")
+                        pageList(1,$("#activity-pageList").bs_pagination('getOption', 'rowsPerPage'));
+                        $("#createActivityModal").modal("hide");
+                        $("#activityAddFrom")[0].reset();
+                    }
+                }
+            })
+        })
+        /*复选框全选或者全不选*/
+        $("#qx").click(function () {
+            $("input[name='xz']").prop("checked", this.checked)
+        })
+        /*单选框选中之后，复选框选中*/
+        $("#activityBody").on("click",$("input[name='xz']"),function () {
+            $("#qx").prop("checked",$("input[name='xz']:checked").length == $("input[name='xz']").length)
+        })
+        $("#deleteActivity").click(function () {
+            var $xz = $("input[name=xz]:checked");
+            if ($xz.length==0){
+                alert("请选择要删除的市场活动")
+                return
+            }else {
+                if (confirm("你确定要删除吗？")){
+                    var params = "";
+                    for (var i=0;i<$xz.length;i++){
+                        params+="id="+$($xz[i]).val()
+                        if (i<$xz.length-1){
+                            params+="&"
+                        }
+                    }
+                    $.ajax({
+                        url:"workbench/activity/deleteActivity",
+                        type:"get",
+                        data:params,
+                        success:function (data) {
+                            if (data){
+                                alert("删除成功")
+                                pageList(1,$("#activity-pageList").bs_pagination('getOption', 'rowsPerPage'));
+                                $("#qx").prop("checked",false)
+                            }else {
+                                alert("删除失败")
+                            }
+                        }
+                    })
+                }
+            }
+
+        })
+        $("#editActivity").click(function () {
+            var $xz = $("input[name='xz']:checked")
+            if($xz.length==0){
+                alert("请选择要修改的市场活动")
+            }else if($xz.length>1){
+                alert("不可以同时选择多条记录进行修改")
+            }else {
+                var id = $xz.val();
+                $.ajax({
+                    url:"workbench/activity/getActivityAndUserListByActivityId",
+                    data:{"id":id},
+                    type:"post",
+                    success:function (data) {
+                        var html = ""
+                        $.each(data.userList, function (i, n) {
+                            html += "<option value=" + n.id + ">" + n.name + "</option>";
+                        })
+                       $("#edit-marketActivityOwner").html(html);
+                       $("#edit-id").val(data.activity.id);
+                       $("#edit-marketActivityOwner").val(data.activity.owner)
+                       $("#edit-ActivityName").val(data.activity.name)
+                       $("#edit-startTime").val(data.activity.startDate)
+                       $("#edit-endTime").val(data.activity.endDate)
+                       $("#edit-cost").val(data.activity.cost)
+                       $("#edit-describe").val(data.activity.description)
+                       $("#editActivityModal").modal("show")
+                    }
+                })
+
+            }
+        })
+        $("#updateActivityBtn").click(function () {
+            var owner  = $.trim($("#edit-marketActivityOwner").val())
+            var id  = $.trim($("#edit-id").val())
+            var name = $.trim($("#edit-ActivityName").val())
+            var startDate= $.trim($("#edit-startTime").val())
+            var endDate = $.trim($("#edit-endTime").val())
+            var cost = $.trim($("#edit-cost").val())
+            var description = $.trim($("#edit-describe").val())
+            $.ajax({
+                url:"workbench/activity/updateActivity",
+                type:"get",
+                data:{
+                    "id":id,
+                    "owner":owner,
+                    "name":name,
+                    "startDate":startDate,
+                    "endDate":endDate,
+                    "cost":cost,
+                    "description":description
+                },
+                success:function (data) {
+                    if (data){
+                        alert("更新成功")
+                        $("#editActivityModal").modal("hide");
+                        $("#hidden-activityName").val("")
+                        $("#hidden-activityOwner").val("")
+                        $("#hidden-activityStartDate").val("")
+                        $("#hidden-activityEndDate").val("")
+                        pageList($("#activity-pageList").bs_pagination('getOption', 'currentPage')
+                            ,$("#activity-pageList").bs_pagination('getOption', 'rowsPerPage'));
+                    }else {
+                        alert("更新失败")
+                    }
+                }
+            })
+        })
+    })
+    function pageList(pageNo, pageSize) {
+        $("#qx").prop("checked",false)
+        $("#search-activityName").val($.trim($("#hidden-activityName").val()))
+        $("#search-activityOwner").val($.trim($("#hidden-activityOwner").val()))
+        $("#search-activityStartDate").val($.trim($("#hidden-activityStartDate").val()))
+        $("#search-activityEndDate").val($.trim($("#hidden-activityEndDate").val()))
+        $.ajax({
+            url: "workbench/activity/pageList",
+            type: "get",
+            dataType: "json",
+            data: {
+                "pageNo": pageNo,
+                "pageSize": pageSize,
+                "name": $.trim($("#search-activityName").val()),
+                "owner": $.trim($("#search-activityOwner").val()),
+                "startDate": $.trim($("#search-activityStartDate").val()),
+                "endDate": $.trim($("#search-activityEndDate").val())
+            },
+            success: function (data) {
+                var html = "";
+                $.each(data.dataList, function (i, n) {
+                    html += '<tr class="active" >'
+                    html += '<td><input type="checkbox" name="xz" value=' + n.id + '/></td>'
+                    html += '<td><a style="text-decoration: none; cursor: pointer;"'
+                    html += 'href=workbench/activity/detail?id='+n.id+'>' + n.name + '</a></td>'
+                    html += '<td>' + n.owner + '</td>'
+                    html += '<td>' + n.startDate + '</td>'
+                    html += '<td>' + n.endDate + '</td>'
+                    html += '</tr>'
+                })
+                $("#activityBody").html(html);
+                var totalPages = data.total % pageSize == 0 ? data.total / pageSize : parseInt(data.total / pageSize) + 1;
+                $("#activity-pageList").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: data.total, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+                    }
+                });
+            }
+        })
+    }
+</script>
+<!-- 创建市场活动的模态窗口 -->
+<div class="modal fade" id="createActivityModal" role="dialog">
+    <div class="modal-dialog" role="document" style="width: 85%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel1">创建市场活动</h4>
+            </div>
+            <div class="modal-body">
+
+                <form id="activityAddFrom" class="form-horizontal" role="form">
+
+                    <div class="form-group">
+                        <label for="create-activityOwner" class="col-sm-2 control-label">所有者<span
+                                style="font-size: 15px; color: red;">*</span></label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <select class="form-control" id="create-activityOwner">
+                            </select>
+                        </div>
+                        <label for="create-activityName" class="col-sm-2 control-label">名称<span
+                                style="font-size: 15px; color: red;">*</span></label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="create-activityName">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="create-startTime" class="col-sm-2 control-label">开始日期</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control time" id="create-startTime" readonly value="">
+                        </div>
+                        <label for="create-endTime" class="col-sm-2 control-label">结束日期</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control time" id="create-endTime" readonly value="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+
+                        <label for="create-cost" class="col-sm-2 control-label">成本</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="create-cost">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="create-describe" class="col-sm-2 control-label">描述</label>
+                        <div class="col-sm-10" style="width: 81%;">
+                            <textarea class="form-control" rows="3" id="create-describe"></textarea>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button id="saveActivity" type="button" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 修改市场活动的模态窗口 -->
+<div class="modal fade" id="editActivityModal" role="dialog">
+    <div class="modal-dialog" role="document" style="width: 85%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel2">修改市场活动</h4>
+                <input type="hidden" id="edit-id"/>
+            </div>
+            <div class="modal-body">
+
+                <form class="form-horizontal" role="form">
+
+                    <div class="form-group">
+                        <label for="edit-marketActivityOwner" class="col-sm-2 control-label">所有者<span
+                                style="font-size: 15px; color: red;">*</span></label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <select class="form-control" id="edit-marketActivityOwner">
+
+                            </select>
+                        </div>
+                        <label for="edit-ActivityName" class="col-sm-2 control-label">名称<span
+                                style="font-size: 15px; color: red;">*</span></label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-ActivityName">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-startTime" class="col-sm-2 control-label ">开始日期</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control time" id="edit-startTime">
+                        </div>
+                        <label for="edit-endTime" class="col-sm-2 control-label ">结束日期</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control time" id="edit-endTime">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-cost" class="col-sm-2 control-label">成本</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-cost">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-describe" class="col-sm-2 control-label">描述</label>
+                        <div class="col-sm-10" style="width: 81%;">
+                            <textarea class="form-control" rows="3" id="edit-describe"></textarea>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="updateActivityBtn">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div>
+    <div style="position: relative; left: 10px; top: -10px;">
+        <div class="page-header">
+            <h3>市场活动列表</h3>
+        </div>
+    </div>
+</div>
+<div style="position: relative; top: -20px; left: 0px; width: 100%; height: 100%;">
+    <div style="width: 100%; position: absolute;top: 5px; left: 10px;">
+
+        <div class="btn-toolbar" role="toolbar" style="height: 80px;">
+            <form class="form-inline" role="form" style="position: relative;top: 8%; left: 5px;">
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">名称</div>
+                        <input class="form-control" type="text" id="search-activityName">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">所有者</div>
+                        <input class="form-control" type="text" id="search-activityOwner">
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">开始日期</div>
+                        <input class="form-control time" type="text" id="search-activityStartDate"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">结束日期</div>
+                        <input class="form-control time" type="text" id="search-activityEndDate">
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-default" id="searchActivity">查询</button>
+
+            </form>
+        </div>
+        <div class="btn-toolbar" role="toolbar"
+             style="background-color: #F7F7F7; height: 50px; position: relative;top: 5px;">
+            <div class="btn-group" style="position: relative; top: 18%;">
+                <button type="button" class="btn btn-primary" id="createActivity">
+                    <span class="glyphicon glyphicon-plus"></span> 创建
+                </button>
+                <button type="button" class="btn btn-default" id="editActivity"><span
+                        class="glyphicon glyphicon-pencil"></span> 修改
+                </button>
+                <button type="button" class="btn btn-danger" id="deleteActivity"><span
+                        class="glyphicon glyphicon-minus"></span> 删除
+                </button>
+            </div>
+
+        </div>
+        <div style="position: relative;top: 10px;">
+            <table class="table table-hover">
+                <thead>
+                <tr style="color: #B3B3B3;">
+                    <td><input type="checkbox" id="qx"/></td>
+                    <td>名称</td>
+                    <td>所有者</td>
+                    <td>开始日期</td>
+                    <td>结束日期</td>
+                </tr>
+                </thead>
+                <tbody id="activityBody">
+                </tbody>
+            </table>
+            <div style="height: 50px; position: relative;top: 30px;">
+                <div id="activity-pageList">
+
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+</div>
+</body>
+</html>

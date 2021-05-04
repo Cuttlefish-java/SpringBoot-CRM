@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <base th:href="${#request.getContextPath()}+'/'">
+    <link th:href="@{jquery/bootstrap_3.3.0/css/bootstrap.min.css}" type="text/css" rel="stylesheet"/>
+    <script type="text/javascript" th:src="@{jquery/jquery-3.4.1.js}"></script>
+    <script type="text/javascript" th:src="@{jquery/bootstrap_3.3.0/js/bootstrap.min.js}"></script>
+
+    <script type="text/javascript" th:inline="javascript">
+
+        //默认情况下取消和保存按钮是隐藏的
+        var cancelAndSaveBtnDefault = true;
+
+        $(function () {
+            $("#remark").focus(function () {
+                if (cancelAndSaveBtnDefault) {
+                    //设置remarkDiv的高度为130px
+                    $("#remarkDiv").css("height", "130px");
+                    //显示
+                    $("#cancelAndSaveBtn").show("2000");
+                    cancelAndSaveBtnDefault = false;
+                }
+            });
+
+            $("#cancelBtn").click(function () {
+                //显示
+                $("#cancelAndSaveBtn").hide();
+                //设置remarkDiv的高度为130px
+                $("#remarkDiv").css("height", "90px");
+                cancelAndSaveBtnDefault = true;
+            });
+
+            $(".remarkDiv").mouseover(function () {
+                $(this).children("div").children("div").show();
+            });
+
+            $(".remarkDiv").mouseout(function () {
+                $(this).children("div").children("div").hide();
+            });
+
+            $(".myHref").mouseover(function () {
+                $(this).children("span").css("color", "red");
+            });
+
+            $(".myHref").mouseout(function () {
+                $(this).children("span").css("color", "#E6E6E6");
+            });
+        });
+        $(function () {
+            $("#remarkBody").on("mouseover", ".remarkDiv", function () {
+                $(this).children("div").children("div").show();
+            })
+            $("#remarkBody").on("mouseout", ".remarkDiv", function () {
+                $(this).children("div").children("div").hide();
+            })
+            $("#saveRemarkBtn").click(function () {
+                var id = [[${clue.getId()}]]
+                var noteContent = $("#remark").val()
+                $.ajax({
+                    url:"workbench/clueRemark/saveRemark",
+                    data:{
+                        "clueId":id,
+                        "noteContent":noteContent
+                    },
+                    dataType:"json",
+                    type:"post",
+                    success:function (data){
+                        if (data){
+                            alert("添加成功")
+                            showClueRemarkList()
+                            $("#remark").val("")
+                        }else {
+                            alert("添加失败")
+                        }
+                    }
+
+                })
+            })
+            $("#editClueBtn").click(function () {
+                var id = [[${clue.getId()}]]
+                $.ajax({
+                    url: "workbench/clue/getClueByIdAndGetUserList",
+                    data: {
+                        "id": id
+                    },
+                    dataType: "json",
+                    type: "get",
+                    success: function (data) {
+                        var html = "";
+                        $.each(data.users, function (i, n) {
+                            html += "<option value='" + n.id + "'>" + n.name + "</option>"
+                        })
+                        $("#edit-clueOwner").html(html)
+                        $("#edit-id").val(data.clue.id)
+                        $("#edit-clueOwner").val(data.clue.owner)
+                        $("#edit-company").val(data.clue.company)
+                        $("#edit-appellation").val(data.clue.appellation)
+                        $("#edit-fullName").val(data.clue.fullName)
+                        $("#edit-job").val(data.clue.job)
+                        $("#edit-email").val(data.clue.email)
+                        $("#edit-phone").val(data.clue.phone)
+                        $("#edit-website").val(data.clue.webSite)
+                        $("#edit-status").val(data.clue.state)
+                        $("#edit-mphone").val(data.clue.mphone)
+                        $("#edit-source").val(data.clue.source)
+                        $("#edit-describe").val(data.clue.description)
+                        $("#edit-nextContactTime").val(data.clue.nextContactTime)
+                        $("#edit-address").val(data.clue.address)
+                        $("#edit-contactSummary").val(data.clue.contactSummary)
+                        $("#editClueModal").modal("show")
+                    }
+
+                })
+
+            })
+            $("#updateClueBtn").click(function () {
+                var id = $.trim($("#edit-id").val());
+                var owner = $.trim($("#edit-clueOwner").val());
+                var company = $.trim($("#edit-company").val());
+                var appellation = $.trim($("#edit-appellation").val());
+                var fullName = $.trim($("#edit-fullName").val());
+                var job = $.trim($("#edit-job").val());
+                var email = $.trim($("#edit-email").val());
+                var phone = $.trim($("#edit-phone").val());
+                var state = $.trim($("#edit-status").val());
+                var webSite = $.trim($("#edit-website").val());
+                var mphone = $.trim($("#edit-mphone").val());
+                var source = $.trim($("#edit-source").val());
+                var description = $.trim($("#edit-describe").val());
+                var nextContactTime = $.trim($("#edit-nextContactTime").val());
+                var address = $.trim($("#edit-address").val());
+                var contactSummary = $.trim($("#edit-contactSummary").val());
+                $.ajax({
+                    url: "workbench/clue/updateClue",
+                    dataType: "json",
+                    type: "post",
+                    data: {
+                        "id": id,
+                        "fullName": fullName,
+                        "appellation": appellation,
+                        "owner": owner,
+                        "company": company,
+                        "job": job,
+                        "email": email,
+                        "phone": phone,
+                        "webSite": webSite,
+                        "mphone": mphone,
+                        "state": state,
+                        "source": source,
+                        "description": description,
+                        "contactSummary": contactSummary,
+                        "nextContactTime": nextContactTime,
+                        "address": address
+                    },
+                    success: function (data) {
+                        if (data) {
+                            alert("更新成功")
+                            $("#editClueModal").modal("hide")
+                            window.location.reload()
+                        } else {
+                            alert("更新失败")
+                        }
+                    }
+                })
+            })
+            $("#deleteClueBtn").click(function () {
+                if (confirm("确定要删除这些线索吗？")) {
+                    var id = [[${clue.getId()}]]
+                    $.ajax({
+                        url: "workbench/clue/deleteClueById",
+                        data: {
+                            "id": id,
+                        },
+                        dataType: "json",
+                        type: "get",
+                        success: function (data) {
+                            if (data) {
+                                alert("删除成功")
+                                window.location.href = [[@{workbench/clue/index}]]
+                            } else {
+                                alert("删除失败")
+                            }
+                        }
+                    })
+                }
+            })
+            showClueRemarkList()
+            $("#updateRemarkBtn").click(function () {
+                var id = $("#remarkId").val()
+                var noteContent = $("#noteContent").val()
+                $.ajax({
+                    url:"workbench/clueRemark/updateClueRemark",
+                    data:{
+                        "id":id,
+                        "noteContent":noteContent
+                    },
+                    type:"post",
+                    dataType:"json",
+                    success:function (data) {
+                        if (data){
+                            alert("更新成功")
+                            showClueRemarkList()
+                            $("#editRemarkModal").modal("hide")
+                        }else {
+                            alert("更新失败")
+                        }
+
+                    }
+                })
+            })
+            /*复选框全选或者全不选*/
+            $("#qx").click(function () {
+                $("input[name='xz']").prop("checked", this.checked)
+            })
+            /*单选框选中之后，复选框选中*/
+            $("#relatedMarketActivitiesBody").on("click", $("input[name='xz']"), function () {
+                $("#qx").prop("checked", $("input[name='xz']:checked").length == $("input[name='xz']").length)
+            })
+            $("#bindClueToActivity").click(function () {
+                var $xz = $("input[name=xz]:checked")
+                if($xz.length==0){
+                    alert("请选择要关联的市场活动")
+                }else {
+                    var params ="clueId="+[[${clue.getId()}]]+"&"
+                    for (var i=0;i<$xz.length;i++){
+                        params+="activityId="+$($xz[i]).val()
+                        if (i<$xz.length-1){
+                            params+="&"
+                        }
+                    }
+                    $.ajax({
+                        url:"workbench/clue/saveActivityBindClue",
+                        data:params,
+                        type:"post",
+                        dataType:"text",
+                        success:function (data) {
+                            if (data){
+                                alert("添加成功")
+                                showActivityList()
+                                $("#search-activityName").val("")
+                                $("#bundModal").modal("hide");
+                            }else {
+                                alert("添加失败")
+                            }
+                        }
+
+                    })
+                }
+            })
+            showActivityList()
+            $("#RelatedMarketActivities").click(function () {
+                $("#search-activityName").val("")
+                $("#relatedMarketActivitiesBody").html("")
+                $("#qx").prop("checked", false)
+                $("#bundModal").modal("show");
+
+                $("#search-activityName").keydown(function (event) {
+                    if (event.keyCode==13){
+                        var name = $.trim($("#search-activityName").val())
+                        var clueId = [[${clue.getId()}]]
+                        $.ajax({
+                            url:"workbench/clue/getActivityByNotHaveClueId",
+                            data:{
+                                clueId:clueId,
+                                name:name
+                            },
+                            type:"get",
+                            dataType:"json",
+                            success:function (data) {
+                                var html = '';
+                                $.each(data, function (i, n) {
+                                    html += '<tr id="'+n.id+'">';
+                                    html += '<td><input type="checkbox" name="xz" value="'+n.id+'"></td>';
+                                    html += '<td>'+n.name+'</td>';
+                                    html += '<td>'+n.startDate+'</td>';
+                                    html += '<td>'+n.endDate+'</td>';
+                                    html += '<td>'+n.owner+'</td>';
+                                    html += '</tr>';
+
+                                })
+                                $("#relatedMarketActivitiesBody").html(html)
+                            }
+                        })
+                        return false;
+                    }
+                })
+
+
+            })
+
+        })
+        function toConvert(){
+            window.location.href=[[@{workbench/clue/convert(id=${clue.getId()},fullName=${clue.getFullName()},owner=${clue.getOwner()},company=${clue.getCompany()},appellation=${clue.getAppellation()})}]]
+        }
+        function editClueRemark(id) {
+            $.ajax({
+                url:"workbench/clueRemark/getClueRemarkById",
+                data:{
+                    "id":id,
+                },
+                type:"get",
+                dataType:"json",
+                success:function (data) {
+                    $("#remarkId").val(data.id)
+                    $("#noteContent").val(data.noteContent)
+                    $("#editRemarkModal").modal("show")
+                }
+            })
+        }
+        function deleteClueRemark(id) {
+            if (confirm("你确定要删除这条线索备注吗？")){
+                $.ajax({
+                    url:"workbench/clueRemark/deleteClueRemark",
+                    data:{
+                        "id":id
+                    },
+                    dataType:"json",
+                    type:"get",
+                    success:function (data) {
+                        if (data){
+                            alert("删除成功")
+                            $("#"+id).remove()
+                        }else {
+                            alert("删除失败")
+                        }
+                    }
+                })
+            }
+        }
+
+        function showClueRemarkList() {
+            $.ajax({
+                url: "workbench/clueRemark/getClueRemarkByClueId",
+                data: {
+                    "clueId": [[${clue.getId()}]]
+                },
+                type: "get",
+                dataType: "json",
+                success: function (data) {
+
+                    var html = "";
+                    $.each(data, function (i, n) {
+                        html += '<div id="' + n.id + '" class="remarkDiv" style="height: 60px;">';
+                        html += '<img title="' + n.createBy + '" src=[[@{image/user-thumbnail.png}]] style="width: 30px; height:30px;">';
+                        html += '<div style="position: relative; top: -40px; left: 40px;">';
+                        html += '<h5 id="h"+n.id>' + n.noteContent + '</h5>';
+                        html += '<font color="gray">线索</font> <font color="gray">-</font> <b>' + [[${clue.getFullName()}]] + '</b>';
+                        html += '<small id="s"+n.id style="color: gray;">' + (n.editFlag == 0 ? n.createTime : n.editTime) + '由' + (n.editFlag == 0 ? n.createBy : n.editBy) + '</small>';
+                        html += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
+                        html += '<a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-edit" onclick="editClueRemark(\'' + n.id + '\')" style="font-size: 20px; color: red;"></span></a>';
+                        html += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                        html += '<a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-remove" onclick="deleteClueRemark(\'' + n.id + '\')" style="font-size: 20px; color: red;"></span></a>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '</div>';
+
+                    })
+                    //<small style="color: gray;">'+n.editFlag==0?n.createTime:n.editTime+"由"+n.editFlag==0?n.createBy:n.editBy+'</small>
+                    $("#showClueRemarkList").html(html)
+                }
+            })
+        }
+        function showActivityList() {
+            $.ajax({
+                url: "workbench/clueRemark/getActivityListByClueId",
+                data: {
+                    "clueId": [[${clue.getId()}]]
+                },
+                type: "get",
+                dataType: "json",
+                success: function (data) {
+
+                    var html = "";
+                    $.each(data, function (i, n) {
+                    html += '<tr id="'+n.id+'">';
+                    html += '<td>'+n.name+'</td>';
+                    html += '<td>'+n.startDate+'</td>';
+                    html += '<td>'+n.endDate+'</td>';
+                    html += '<td>'+n.owner+'</td>';
+                    html += '<td><a href="javascript:void(0);" onclick="disassociate(\''+n.id+'\')" style="text-decoration: none;"><span class="glyphicon glyphicon-remove"></span>解除关联</a></td>';
+                    html += '</tr>';
+
+                    })
+                    $("#activityBody").html(html)
+                }
+            })
+        }
+        function disassociate(id){
+            if (confirm("确定解除关联吗？")){
+                $.ajax({
+                    url:"workbench/clueRemark/deleteActivityById",
+                    type:"get",
+                    dataType:"json",
+                    data:{
+                        "id":id
+                    },
+                    success:function (data) {
+                        if (data){
+                            alert("解除成功")
+                            $("#"+id).remove()
+                        }else {
+                            alert("解除失败")
+                        }
+                    }
+                })
+            }
+        }
+    </script>
+
+</head>
+<body>
+<!-- 修改市场活动备注的模态窗口 -->
+<div class="modal fade" id="editRemarkModal" role="dialog">
+    <!--<%&#45;&#45; 备注的id &#45;&#45;%>-->
+    <input type="hidden" id="remarkId">
+    <div class="modal-dialog" role="document" style="width: 40%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">修改备注</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="edit-describe" class="col-sm-2 control-label">内容</label>
+                        <div class="col-sm-10" style="width: 81%;">
+                            <textarea class="form-control" rows="3" id="noteContent"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="updateRemarkBtn">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 关联市场活动的模态窗口 -->
+<div class="modal fade" id="bundModal" role="dialog">
+    <div class="modal-dialog" role="document" style="width: 80%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">关联市场活动</h4>
+            </div>
+            <div class="modal-body">
+                <div class="btn-group" style="position: relative; top: 18%; left: 8px;">
+                    <form class="form-inline" role="form">
+                        <div class="form-group has-feedback">
+                            <input type="text" class="form-control" id="search-activityName" style="width: 300px;"
+                                   placeholder="请输入市场活动名称，支持模糊查询">
+                            <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                        </div>
+                    </form>
+                </div>
+                <table id="activityTable" class="table table-hover" style="width: 900px; position: relative;top: 10px;">
+                    <thead>
+                    <tr style="color: #B3B3B3;">
+                        <td><input id="qx" type="checkbox"/></td>
+                        <td>名称</td>
+                        <td>开始日期</td>
+                        <td>结束日期</td>
+                        <td>所有者</td>
+                        <td></td>
+                    </tr>
+                    </thead>
+                    <tbody id="relatedMarketActivitiesBody">
+
+                    <!--<tr>
+                        <td><input type="checkbox"/></td>
+                        <td>发传单</td>
+                        <td>2020-10-10</td>
+                        <td>2020-10-20</td>
+                        <td>zhangsan</td>
+                    </tr>-->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="bindClueToActivity">关联</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 修改线索的模态窗口 -->
+<div class="modal fade" id="editClueModal" role="dialog">
+    <div class="modal-dialog" role="document" style="width: 90%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">修改线索</h4>
+                <input type="hidden" id="edit-id"/>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+
+                    <div class="form-group">
+                        <label for="edit-clueOwner" class="col-sm-2 control-label">所有者<span
+                                style="font-size: 15px; color: red;">*</span></label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <select class="form-control" id="edit-clueOwner">
+                            </select>
+                        </div>
+                        <label for="edit-company" class="col-sm-2 control-label">公司<span
+                                style="font-size: 15px; color: red;">*</span></label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-company" value="河北祥智">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-appellation" class="col-sm-2 control-label">称呼</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <select class="form-control" id="edit-appellation">
+                                <option></option>
+                                <option th:each="appelation : ${appellationList}" th:value="${appelation.value}"
+                                        th:text="${appelation.text}"></option>
+                            </select>
+                        </div>
+                        <label for="edit-fullName" class="col-sm-2 control-label">姓名<span
+                                style="font-size: 15px; color: red;">*</span></label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-fullName" value="李四">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-job" class="col-sm-2 control-label">职位</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-job" >
+                        </div>
+                        <label for="edit-email" class="col-sm-2 control-label">邮箱</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-email">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-phone" class="col-sm-2 control-label">公司座机</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-phone">
+                        </div>
+                        <label for="edit-website" class="col-sm-2 control-label">公司网站</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-website">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-mphone" class="col-sm-2 control-label">手机</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <input type="text" class="form-control" id="edit-mphone" value="12345678901">
+                        </div>
+                        <label for="edit-status" class="col-sm-2 control-label">线索状态</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <select class="form-control" id="edit-status">
+                                <option></option>
+                                <option th:each="clueState : ${clueStateList}" th:value="${clueState.value}"
+                                        th:text="${clueState.text}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-source" class="col-sm-2 control-label">线索来源</label>
+                        <div class="col-sm-10" style="width: 300px;">
+                            <select class="form-control" id="edit-source">
+                                <option></option>
+                                <option th:each="source : ${sourceList}" th:value="${source.value}"
+                                        th:text="${source.text}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-describe" class="col-sm-2 control-label">描述</label>
+                        <div class="col-sm-10" style="width: 81%;">
+                            <textarea class="form-control" rows="3" id="edit-describe">这是一条线索的描述信息</textarea>
+                        </div>
+                    </div>
+
+                    <div style="height: 1px; width: 103%; background-color: #D5D5D5; left: -13px; position: relative;"></div>
+
+                    <div style="position: relative;top: 15px;">
+                        <div class="form-group">
+                            <label for="edit-contactSummary" class="col-sm-2 control-label">联系纪要</label>
+                            <div class="col-sm-10" style="width: 81%;">
+                                <textarea class="form-control" rows="3" id="edit-contactSummary">这个线索即将被转换</textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-nextContactTime" class="col-sm-2 control-label">下次联系时间</label>
+                            <div class="col-sm-10" style="width: 300px;">
+                                <input type="text" class="form-control time" id="edit-nextContactTime" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="height: 1px; width: 103%; background-color: #D5D5D5; left: -13px; position: relative; top : 10px;"></div>
+
+                    <div style="position: relative;top: 20px;">
+                        <div class="form-group">
+                            <label for="edit-address" class="col-sm-2 control-label">详细地址</label>
+                            <div class="col-sm-10" style="width: 81%;">
+                                <textarea class="form-control" rows="1" id="edit-address">北京大兴区大族企业湾</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="updateClueBtn">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 返回按钮 -->
+<div style="position: relative; top: 35px; left: 10px;">
+    <a href="javascript:void(0);" onclick="window.history.back();"><span class="glyphicon glyphicon-arrow-left"
+                                                                         style="font-size: 20px; color: #DDDDDD"></span></a>
+</div>
+
+<!-- 大标题 -->
+<div style="position: relative; left: 40px; top: -30px;">
+    <div class="page-header">
+        <h3><span th:text="${clue.getFullName()}"></span> <small th:text="${clue.getCompany()}"></small></h3>
+    </div>
+    <div style="position: relative; height: 50px; width: 500px;  top: -72px; left: 700px;">
+        <button type="button" class="btn btn-default" onclick="toConvert()"><span
+                class="glyphicon glyphicon-retweet"></span> 转换
+        </button>
+        <button type="button" class="btn btn-default" id="editClueBtn"><span
+                class="glyphicon glyphicon-edit"></span> 编辑
+        </button>
+        <button type="button" class="btn btn-danger" id="deleteClueBtn"><span class="glyphicon glyphicon-minus"></span>
+            删除
+        </button>
+    </div>
+</div>
+
+<!-- 详细信息 -->
+<div style="position: relative; top: -70px;">
+    <div style="position: relative; left: 40px; height: 30px;">
+        <div style="width: 300px; color: gray;">名称</div>
+        <div style="width: 300px;position: relative; left: 200px; top: -20px;"><b th:text="${clue.getFullName()}"></b>
+        </div>
+        <div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">所有者</div>
+        <div style="width: 300px;position: relative; left: 650px; top: -60px;"><b th:text="${clue.getOwner()}"></b>
+        </div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 10px;">
+        <div style="width: 300px; color: gray;">公司</div>
+        <div style="width: 300px;position: relative; left: 200px; top: -20px;"><b th:text="${clue.getCompany()}"></b>
+        </div>
+        <div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">职位</div>
+        <div style="width: 300px;position: relative; left: 650px; top: -60px;"><b th:text="${clue.getJob()}"></b></div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 20px;">
+        <div style="width: 300px; color: gray;">邮箱</div>
+        <div style="width: 300px;position: relative; left: 200px; top: -20px;"><b th:text="${clue.getEmail()}"></b>
+        </div>
+        <div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">公司座机</div>
+        <div style="width: 300px;position: relative; left: 650px; top: -60px;"><b th:text="${clue.getPhone()}"></b>
+        </div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 30px;">
+        <div style="width: 300px; color: gray;">公司网站</div>
+        <div style="width: 300px;position: relative; left: 200px; top: -20px;"><b th:text="${clue.getWebSite()}"></b>
+        </div>
+        <div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">手机</div>
+        <div style="width: 300px;position: relative; left: 650px; top: -60px;"><b th:text="${clue.getMphone()}"></b>
+        </div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 40px;">
+        <div style="width: 300px; color: gray;">线索状态</div>
+        <div style="width: 300px;position: relative; left: 200px; top: -20px;"><b th:text="${clue.getState()}"></b>
+        </div>
+        <div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">线索来源</div>
+        <div style="width: 300px;position: relative; left: 650px; top: -60px;"><b th:text="${clue.getSource()}"></b>
+        </div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 50px;">
+        <div style="width: 300px; color: gray;">创建者</div>
+        <div style="width: 500px;position: relative; left: 200px; top: -20px;"><b th:text="${clue.getCreateBy()}">&nbsp;&nbsp;</b>&nbsp;&nbsp;<small style="font-size: 10px; color: gray;" th:text="${clue.getCreateTime()}"></small></div>
+        <div style="height: 1px; width: 550px; background: #D5D5D5; position: relative; top: -20px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 60px;">
+        <div style="width: 300px; color: gray;">修改者</div>
+        <div style="width: 500px;position: relative; left: 200px; top: -20px;"><b th:text="${clue.getEditBy()}">&nbsp;&nbsp;</b>&nbsp;&nbsp;<small style="font-size: 10px; color: gray;" th:text="${clue.getEditTime()}"></small></div>
+        <div style="height: 1px; width: 550px; background: #D5D5D5; position: relative; top: -20px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 70px;">
+        <div style="width: 300px; color: gray;">描述</div>
+        <div style="width: 630px;position: relative; left: 200px; top: -20px;">
+            <b th:text="${#strings.abbreviate(clue.getDescription(),clue.getDescription().length())}">
+            </b>
+        </div>
+        <div style="height: 1px; width: 850px; background: #D5D5D5; position: relative; top: -20px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 80px;">
+        <div style="width: 300px; color: gray;">联系纪要</div>
+        <div style="width: 630px;position: relative; left: 200px; top: -20px;">
+            <b th:text="${#strings.abbreviate(clue.getContactSummary(),clue.getContactSummary().length())}">
+            </b>
+        </div>
+        <div style="height: 1px; width: 850px; background: #D5D5D5; position: relative; top: -20px;"></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 90px;">
+        <div style="width: 300px; color: gray;">下次联系时间</div>
+        <div style="width: 300px;position: relative; left: 200px; top: -20px;"><b
+                th:text="${clue.getNextContactTime()}"></b></div>
+        <div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -20px; "></div>
+    </div>
+    <div style="position: relative; left: 40px; height: 30px; top: 100px;">
+        <div style="width: 300px; color: gray;">详细地址</div>
+        <div style="width: 630px;position: relative; left: 200px; top: -20px;">
+            <b th:text="${clue.getAddress()}"></b>
+        </div>
+        <div style="height: 1px; width: 850px; background: #D5D5D5; position: relative; top: -20px;"></div>
+    </div>
+</div>
+
+<!-- 备注 -->
+<div id="remarkBody" style="position: relative; top: 40px; left: 40px;">
+    <div class="page-header">
+        <h4>备注</h4>
+    </div>
+    <div id="showClueRemarkList">
+
+    </div>
+    <div id="remarkDiv" style="background-color: #E6E6E6; width: 870px; height: 90px;">
+        <form role="form" style="position: relative;top: 10px; left: 10px;">
+            <textarea id="remark" class="form-control" style="width: 850px; resize : none;" rows="2"
+                      placeholder="添加备注..."></textarea>
+            <p id="cancelAndSaveBtn" style="position: relative;left: 737px; top: 10px; display: none;">
+                <button id="cancelBtn" type="button" class="btn btn-default">取消</button>
+                <button type="button" class="btn btn-primary" id="saveRemarkBtn">保存</button>
+            </p>
+        </form>
+    </div>
+</div>
+
+<!-- 市场活动 -->
+<div>
+    <div style="position: relative; top: 60px; left: 40px;">
+        <div class="page-header">
+            <h4>市场活动</h4>
+        </div>
+        <div style="position: relative;top: 0px;">
+            <table class="table table-hover" style="width: 900px;">
+                <thead>
+                <tr style="color: #B3B3B3;">
+                    <td>名称</td>
+                    <td>开始日期</td>
+                    <td>结束日期</td>
+                    <td>所有者</td>
+                    <td></td>
+                </tr>
+                </thead>
+                <tbody id="activityBody">
+
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <a href="javascript:void(0);" id="RelatedMarketActivities" style="text-decoration: none;"><span class="glyphicon glyphicon-plus"></span>关联市场活动</a>
+        </div>
+    </div>
+</div>
+
+
+<div style="height: 200px;"></div>
+</body>
+</html>

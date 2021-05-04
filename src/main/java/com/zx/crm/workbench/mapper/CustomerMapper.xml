@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.crm.workbench.mapper.CustomerMapper">
+    <resultMap id="BaseResultMap" type="com.zx.crm.workbench.model.Customer">
+        <id column="id" jdbcType="CHAR" property="id"/>
+        <result column="owner" jdbcType="CHAR" property="owner"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="web_site" jdbcType="VARCHAR" property="webSite"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="create_By" jdbcType="VARCHAR" property="createBy"/>
+        <result column="create_Time" jdbcType="CHAR" property="createTime"/>
+        <result column="edit_By" jdbcType="VARCHAR" property="editBy"/>
+        <result column="edit_Time" jdbcType="CHAR" property="editTime"/>
+        <result column="contact_Summary" jdbcType="VARCHAR" property="contactSummary"/>
+        <result column="next_Contact_Time" jdbcType="CHAR" property="nextContactTime"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, owner, name, web_site, phone, create_By, create_Time, edit_By, edit_Time, contact_Summary, 
+    next_Contact_Time, description, address
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tbl_customer
+        where id = #{id,jdbcType=CHAR}
+    </select>
+    <select id="getCustomerCounts" parameterType="com.zx.crm.workbench.model.Customer" resultType="int">
+
+        select
+        count(*)
+        from tbl_customer c
+        join tbl_user u
+        on c.owner = u.id
+        <where>
+            <if test="name!=null and name!=''">
+                c.name like "%"#{name}"%"
+            </if>
+            <if test="owner!=null and owner!=''">
+                u.name like "%"#{owner}"%"
+            </if>
+            <if test="phone!=null and phone!=''">
+                c.phone like "%"#{phone}"%"
+            </if>
+            <if test="webSite!=null and webSite!=''">
+                c.web_site like "%"#{webSite}"%"
+            </if>
+        </where>
+        order by c.create_Time desc
+    </select>
+    <select id="selectiveCustomer" parameterType="com.zx.crm.workbench.model.Customer"
+            resultType="com.zx.crm.workbench.model.Customer">
+
+        select
+        c.id, u.name as owner, c.name, c.web_site, c.phone, c.create_By, c.create_Time, c.edit_By,
+        c.edit_Time, c.contact_Summary,c.next_Contact_Time, c.description, c.address
+        from tbl_customer c
+        join tbl_user u
+        on c.owner = u.id
+        <where>
+            <if test="name!=null and name!=''">
+                c.name like "%"#{name}"%"
+            </if>
+            <if test="owner!=null and owner!=''">
+                u.name like "%"#{owner}"%"
+            </if>
+            <if test="phone!=null and phone!=''">
+                c.phone like "%"#{phone}"%"
+            </if>
+            <if test="webSite!=null and webSite!=''">
+                c.web_site like "%"#{webSite}"%"
+            </if>
+        </where>
+        order by c.create_Time desc
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from tbl_customer
+    where id = #{id,jdbcType=CHAR}
+  </delete>
+    <insert id="insert" parameterType="com.zx.crm.workbench.model.Customer">
+    insert into tbl_customer (id, owner, name, web_site, 
+      phone, create_By, create_Time, 
+      edit_By, edit_Time, contact_Summary, 
+      next_Contact_Time, description, address
+      )
+    values (#{id,jdbcType=CHAR}, #{owner,jdbcType=CHAR}, #{name,jdbcType=VARCHAR}, #{webSite,jdbcType=VARCHAR}, 
+      #{phone,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=CHAR}, 
+      #{editBy,jdbcType=VARCHAR}, #{editTime,jdbcType=CHAR}, #{contactSummary,jdbcType=VARCHAR}, 
+      #{nextContactTime,jdbcType=CHAR}, #{description,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.zx.crm.workbench.model.Customer">
+        insert into tbl_customer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="owner != null">
+                owner,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="webSite != null">
+                web_site,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="createBy != null">
+                create_By,
+            </if>
+            <if test="createTime != null">
+                create_Time,
+            </if>
+            <if test="editBy != null">
+                edit_By,
+            </if>
+            <if test="editTime != null">
+                edit_Time,
+            </if>
+            <if test="contactSummary != null">
+                contact_Summary,
+            </if>
+            <if test="nextContactTime != null">
+                next_Contact_Time,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="address != null">
+                address,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=CHAR},
+            </if>
+            <if test="owner != null">
+                #{owner,jdbcType=CHAR},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="webSite != null">
+                #{webSite,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="createBy != null">
+                #{createBy,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=CHAR},
+            </if>
+            <if test="editBy != null">
+                #{editBy,jdbcType=VARCHAR},
+            </if>
+            <if test="editTime != null">
+                #{editTime,jdbcType=CHAR},
+            </if>
+            <if test="contactSummary != null">
+                #{contactSummary,jdbcType=VARCHAR},
+            </if>
+            <if test="nextContactTime != null">
+                #{nextContactTime,jdbcType=CHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null">
+                #{address,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.zx.crm.workbench.model.Customer">
+        update tbl_customer
+        <set>
+            <if test="owner != null">
+                owner = #{owner,jdbcType=CHAR},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="webSite != null">
+                web_site = #{webSite,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="createBy != null">
+                create_By = #{createBy,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_Time = #{createTime,jdbcType=CHAR},
+            </if>
+            <if test="editBy != null">
+                edit_By = #{editBy,jdbcType=VARCHAR},
+            </if>
+            <if test="editTime != null">
+                edit_Time = #{editTime,jdbcType=CHAR},
+            </if>
+            <if test="contactSummary != null">
+                contact_Summary = #{contactSummary,jdbcType=VARCHAR},
+            </if>
+            <if test="nextContactTime != null">
+                next_Contact_Time = #{nextContactTime,jdbcType=CHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null">
+                address = #{address,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=CHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.zx.crm.workbench.model.Customer">
+    update tbl_customer
+    set owner = #{owner,jdbcType=CHAR},
+      name = #{name,jdbcType=VARCHAR},
+      web_site = #{webSite,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      create_By = #{createBy,jdbcType=VARCHAR},
+      create_Time = #{createTime,jdbcType=CHAR},
+      edit_By = #{editBy,jdbcType=VARCHAR},
+      edit_Time = #{editTime,jdbcType=CHAR},
+      contact_Summary = #{contactSummary,jdbcType=VARCHAR},
+      next_Contact_Time = #{nextContactTime,jdbcType=CHAR},
+      description = #{description,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=CHAR}
+  </update>
+    <delete id="deleteCustomers" parameterType="java.util.Arrays" >
+        delete from tbl_customer
+        where id in
+        <foreach collection="array" item="customerId" separator="," open="(" close=")">
+            #{customerId}
+        </foreach>
+    </delete>
+    <select id="getCustomerById" resultType="com.zx.crm.workbench.model.Customer">
+        select
+        c.id, u.name as owner, c.name, c.web_site, c.phone, c.create_By, c.create_Time, c.edit_By,
+        c.edit_Time, c.contact_Summary,c.next_Contact_Time, c.description, c.address
+        from tbl_customer c
+        join tbl_user u
+        on c.owner = u.id
+        where c.id =#{id}
+    </select>
+    <select id="selectCustomer" resultType="com.zx.crm.workbench.model.Customer">
+        select
+        c.id, u.name as owner, c.name, c.web_site, c.phone, c.create_By, c.create_Time, c.edit_By,
+        c.edit_Time, c.contact_Summary,c.next_Contact_Time, c.description, c.address
+        from tbl_customer c
+        join tbl_user u
+        on c.owner = u.id
+        where c.name =#{name}
+    </select>
+    <select id="getCustomerName" resultType="java.lang.String">
+        select
+        `name`
+        from tbl_customer
+        where `name` like "%"#{name}"%"
+    </select>
+</mapper>

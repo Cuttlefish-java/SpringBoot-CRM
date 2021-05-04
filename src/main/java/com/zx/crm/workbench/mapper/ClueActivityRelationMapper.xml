@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.crm.workbench.mapper.ClueActivityRelationMapper">
+  <resultMap id="BaseResultMap" type="com.zx.crm.workbench.model.ClueActivityRelation">
+    <id column="id" jdbcType="CHAR" property="id" />
+    <result column="clue_Id" jdbcType="CHAR" property="clueId" />
+    <result column="activity_Id" jdbcType="CHAR" property="activityId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, clue_Id, activity_Id
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_clue_activity_relation
+    where id = #{id,jdbcType=CHAR}
+  </select>
+    <select id="selectActivityByClueId" resultType="com.zx.crm.workbench.model.ClueActivityRelation">
+      select
+      <include refid="Base_Column_List" />
+      from tbl_clue_activity_relation
+      where clue_Id = #{clue_Id}
+    </select>
+  <select id="getCountsByClueId" resultType="java.lang.Integer">
+    select count(*)
+    from tbl_clue_activity_relation
+    where clue_Id =#{clueId}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from tbl_clue_activity_relation
+    where id = #{id,jdbcType=CHAR}
+  </delete>
+  <delete id="deleteByClueId">
+    delete from tbl_clue_activity_relation
+    where clue_Id = #{clueId}
+  </delete>
+  <insert id="insert" parameterType="com.zx.crm.workbench.model.ClueActivityRelation">
+    insert into tbl_clue_activity_relation (id, clue_Id, activity_Id
+      )
+    values (#{id,jdbcType=CHAR}, #{clueId,jdbcType=CHAR}, #{activityId,jdbcType=CHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.zx.crm.workbench.model.ClueActivityRelation">
+    insert into tbl_clue_activity_relation
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="clueId != null">
+        clue_Id,
+      </if>
+      <if test="activityId != null">
+        activity_Id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="clueId != null">
+        #{clueId,jdbcType=CHAR},
+      </if>
+      <if test="activityId != null">
+        #{activityId,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.zx.crm.workbench.model.ClueActivityRelation">
+    update tbl_clue_activity_relation
+    <set>
+      <if test="clueId != null">
+        clue_Id = #{clueId,jdbcType=CHAR},
+      </if>
+      <if test="activityId != null">
+        activity_Id = #{activityId,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.zx.crm.workbench.model.ClueActivityRelation">
+    update tbl_clue_activity_relation
+    set clue_Id = #{clueId,jdbcType=CHAR},
+      activity_Id = #{activityId,jdbcType=CHAR}
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

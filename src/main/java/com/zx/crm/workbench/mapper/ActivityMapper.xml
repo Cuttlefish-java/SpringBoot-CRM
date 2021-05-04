@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.crm.workbench.mapper.ActivityMapper">
+    <resultMap id="BaseResultMap" type="com.zx.crm.workbench.model.Activity">
+        <id column="id" jdbcType="CHAR" property="id"/>
+        <result column="owner" jdbcType="CHAR" property="owner"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="start_Date" jdbcType="CHAR" property="startDate"/>
+        <result column="end_Date" jdbcType="CHAR" property="endDate"/>
+        <result column="cost" jdbcType="VARCHAR" property="cost"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="create_Time" jdbcType="CHAR" property="createTime"/>
+        <result column="create_By" jdbcType="VARCHAR" property="createBy"/>
+        <result column="editTime" jdbcType="CHAR" property="edittime"/>
+        <result column="editBy" jdbcType="VARCHAR" property="editby"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, owner, name, start_Date, end_Date, cost, description, create_Time, create_By, 
+    editTime, editBy
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tbl_activity
+        where id = #{id,jdbcType=CHAR}
+    </select>
+    <select id="getActivityCounts" resultType="java.lang.Integer">
+        select
+        count(a.id)
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        <where>
+            <if test="name!=null and name!=''">
+                and a.name like "%"#{name}"%"
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like "%"#{owner}"%"
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and a.start_Date &gt; #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and a.end_Date &lt; #{endDate}
+            </if>
+        </where>
+        order by a.create_Time desc
+    </select>
+    <select id="selectiveActivity" resultType="com.zx.crm.workbench.model.Activity">
+        select
+        a.id, u.name as owner, a.name, a.start_Date, a.end_Date, a.cost, a.description, a.create_Time, a.create_By,
+        a.editTime, a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        <where>
+            <if test="name!=null and name!=''">
+                and a.name like "%"#{name}"%"
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like "%"#{owner}"%"
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and a.start_Date &gt; #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and a.end_Date &lt; #{endDate}
+            </if>
+
+        </where>
+        order by a.create_Time desc
+    </select>
+    <select id="selectById" resultType="com.zx.crm.workbench.model.Activity">
+        select
+        a.id, u.name as owner, a.name, a.start_Date, a.end_Date, a.cost, a.description, a.create_Time, a.create_By,
+        a.editTime, a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        <where>
+            <if test="id!=null and id!=''">
+                a.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="getActivityListByClueId" resultType="com.zx.crm.workbench.model.Activity">
+        select
+        car.id as id, u.name as owner, a.name, a.start_Date, a.end_Date, a.cost, a.description, a.create_Time, a.create_By,
+        a.editTime, a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        join tbl_clue_activity_relation car
+        on a.id = car.activity_Id
+        where car.clue_Id = #{clueId}
+    </select>
+    <select id="getActivityByNotHaveClueId" resultType="com.zx.crm.workbench.model.Activity">
+        select
+        a.id, u.name as owner, a.name, a.start_Date, a.end_Date, a.cost, a.description, a.create_Time, a.create_By,
+        a.editTime, a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        where
+        a.name like "%"#{name}"%" and
+        a.id not in(
+        select activity_Id from tbl_clue_activity_relation car where clue_id=#{clueId}
+        )
+
+    </select>
+    <select id="getActivityListByName" resultType="com.zx.crm.workbench.model.Activity">
+        select
+        a.id, u.name as owner, a.name, a.start_Date, a.end_Date, a.cost, a.description, a.create_Time, a.create_By,
+        a.editTime, a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        where
+        a.name like "%"#{name}"%"
+        order by a.create_Time desc
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from tbl_activity
+    where id = #{id,jdbcType=CHAR}
+  </delete>
+    <delete id="deleteActivitiesById" parameterType="java.util.Arrays">
+        delete from tbl_activity
+        where id in
+        <foreach collection="array" item="activity_id" index="index" open="(" close=")" separator=",">
+            #{activity_id}
+        </foreach>
+    </delete>
+    <insert id="insert" parameterType="com.zx.crm.workbench.model.Activity">
+    insert into tbl_activity (id, owner, name, start_Date, 
+      end_Date, cost, description, 
+      create_Time, create_By, editTime, 
+      editBy)
+    values (#{id,jdbcType=CHAR}, #{owner,jdbcType=CHAR}, #{name,jdbcType=VARCHAR}, #{startDate,jdbcType=CHAR}, 
+      #{endDate,jdbcType=CHAR}, #{cost,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=CHAR}, #{createBy,jdbcType=VARCHAR}, #{edittime,jdbcType=CHAR}, 
+      #{editby,jdbcType=VARCHAR})
+  </insert>
+    <insert id="insertSelective" parameterType="com.zx.crm.workbench.model.Activity">
+        insert into tbl_activity
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="owner != null">
+                owner,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="startDate != null">
+                start_Date,
+            </if>
+            <if test="endDate != null">
+                end_Date,
+            </if>
+            <if test="cost != null">
+                cost,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="createTime != null">
+                create_Time,
+            </if>
+            <if test="createBy != null">
+                create_By,
+            </if>
+            <if test="edittime != null">
+                editTime,
+            </if>
+            <if test="editby != null">
+                editBy,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=CHAR},
+            </if>
+            <if test="owner != null">
+                #{owner,jdbcType=CHAR},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="startDate != null">
+                #{startDate,jdbcType=CHAR},
+            </if>
+            <if test="endDate != null">
+                #{endDate,jdbcType=CHAR},
+            </if>
+            <if test="cost != null">
+                #{cost,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=CHAR},
+            </if>
+            <if test="createBy != null">
+                #{createBy,jdbcType=VARCHAR},
+            </if>
+            <if test="edittime != null">
+                #{edittime,jdbcType=CHAR},
+            </if>
+            <if test="editby != null">
+                #{editby,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.zx.crm.workbench.model.Activity">
+        update tbl_activity
+        <set>
+            <if test="owner != null">
+                owner = #{owner,jdbcType=CHAR},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="startDate != null">
+                start_Date = #{startDate,jdbcType=CHAR},
+            </if>
+            <if test="endDate != null">
+                end_Date = #{endDate,jdbcType=CHAR},
+            </if>
+            <if test="cost != null">
+                cost = #{cost,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_Time = #{createTime,jdbcType=CHAR},
+            </if>
+            <if test="createBy != null">
+                create_By = #{createBy,jdbcType=VARCHAR},
+            </if>
+            <if test="edittime != null">
+                editTime = #{edittime,jdbcType=CHAR},
+            </if>
+            <if test="editby != null">
+                editBy = #{editby,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=CHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.zx.crm.workbench.model.Activity">
+    update tbl_activity
+    set owner = #{owner,jdbcType=CHAR},
+      name = #{name,jdbcType=VARCHAR},
+      start_Date = #{startDate,jdbcType=CHAR},
+      end_Date = #{endDate,jdbcType=CHAR},
+      cost = #{cost,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      create_Time = #{createTime,jdbcType=CHAR},
+      create_By = #{createBy,jdbcType=VARCHAR},
+      editTime = #{edittime,jdbcType=CHAR},
+      editBy = #{editby,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

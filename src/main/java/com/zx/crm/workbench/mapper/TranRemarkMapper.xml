@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.crm.workbench.mapper.TranRemarkMapper">
+  <resultMap id="BaseResultMap" type="com.zx.crm.workbench.model.TranRemark">
+    <id column="id" jdbcType="CHAR" property="id" />
+    <result column="note_Content" jdbcType="VARCHAR" property="noteContent" />
+    <result column="create_By" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_Time" jdbcType="CHAR" property="createTime" />
+    <result column="edit_By" jdbcType="VARCHAR" property="editBy" />
+    <result column="edit_Time" jdbcType="CHAR" property="editTime" />
+    <result column="edit_Flag" jdbcType="CHAR" property="editFlag" />
+    <result column="tran_Id" jdbcType="CHAR" property="tranId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, note_Content, create_By, create_Time, edit_By, edit_Time, edit_Flag, tran_Id
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_tran_remark
+    where id = #{id,jdbcType=CHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from tbl_tran_remark
+    where id = #{id,jdbcType=CHAR}
+  </delete>
+  <insert id="insert" parameterType="com.zx.crm.workbench.model.TranRemark">
+    insert into tbl_tran_remark (id, note_Content, create_By, 
+      create_Time, edit_By, edit_Time, 
+      edit_Flag, tran_Id)
+    values (#{id,jdbcType=CHAR}, #{noteContent,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=CHAR}, #{editBy,jdbcType=VARCHAR}, #{editTime,jdbcType=CHAR}, 
+      #{editFlag,jdbcType=CHAR}, #{tranId,jdbcType=CHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.zx.crm.workbench.model.TranRemark">
+    insert into tbl_tran_remark
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="noteContent != null">
+        note_Content,
+      </if>
+      <if test="createBy != null">
+        create_By,
+      </if>
+      <if test="createTime != null">
+        create_Time,
+      </if>
+      <if test="editBy != null">
+        edit_By,
+      </if>
+      <if test="editTime != null">
+        edit_Time,
+      </if>
+      <if test="editFlag != null">
+        edit_Flag,
+      </if>
+      <if test="tranId != null">
+        tran_Id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="noteContent != null">
+        #{noteContent,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=CHAR},
+      </if>
+      <if test="editBy != null">
+        #{editBy,jdbcType=VARCHAR},
+      </if>
+      <if test="editTime != null">
+        #{editTime,jdbcType=CHAR},
+      </if>
+      <if test="editFlag != null">
+        #{editFlag,jdbcType=CHAR},
+      </if>
+      <if test="tranId != null">
+        #{tranId,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.zx.crm.workbench.model.TranRemark">
+    update tbl_tran_remark
+    <set>
+      <if test="noteContent != null">
+        note_Content = #{noteContent,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_By = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_Time = #{createTime,jdbcType=CHAR},
+      </if>
+      <if test="editBy != null">
+        edit_By = #{editBy,jdbcType=VARCHAR},
+      </if>
+      <if test="editTime != null">
+        edit_Time = #{editTime,jdbcType=CHAR},
+      </if>
+      <if test="editFlag != null">
+        edit_Flag = #{editFlag,jdbcType=CHAR},
+      </if>
+      <if test="tranId != null">
+        tran_Id = #{tranId,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.zx.crm.workbench.model.TranRemark">
+    update tbl_tran_remark
+    set note_Content = #{noteContent,jdbcType=VARCHAR},
+      create_By = #{createBy,jdbcType=VARCHAR},
+      create_Time = #{createTime,jdbcType=CHAR},
+      edit_By = #{editBy,jdbcType=VARCHAR},
+      edit_Time = #{editTime,jdbcType=CHAR},
+      edit_Flag = #{editFlag,jdbcType=CHAR},
+      tran_Id = #{tranId,jdbcType=CHAR}
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

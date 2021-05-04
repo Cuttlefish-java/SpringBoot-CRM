@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.crm.workbench.mapper.TranMapper">
+    <resultMap id="BaseResultMap" type="com.zx.crm.workbench.model.Tran">
+        <id column="id" jdbcType="CHAR" property="id"/>
+        <result column="owner" jdbcType="CHAR" property="owner"/>
+        <result column="money" jdbcType="VARCHAR" property="money"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="expected_Date" jdbcType="CHAR" property="expectedDate"/>
+        <result column="customer_Id" jdbcType="CHAR" property="customerId"/>
+        <result column="stage" jdbcType="VARCHAR" property="stage"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="source" jdbcType="VARCHAR" property="source"/>
+        <result column="activity_Id" jdbcType="CHAR" property="activityId"/>
+        <result column="contacts_Id" jdbcType="CHAR" property="contactsId"/>
+        <result column="create_By" jdbcType="VARCHAR" property="createBy"/>
+        <result column="create_Time" jdbcType="CHAR" property="createTime"/>
+        <result column="edit_By" jdbcType="VARCHAR" property="editBy"/>
+        <result column="edit_Time" jdbcType="CHAR" property="editTime"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="contact_Summary" jdbcType="VARCHAR" property="contactSummary"/>
+        <result column="next_Contact_Time" jdbcType="CHAR" property="nextContactTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, owner, money, name, expected_Date, customer_Id, stage, type, source, activity_Id, 
+    contacts_Id, create_By, create_Time, edit_By, edit_Time, description, contact_Summary, 
+    next_Contact_Time
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tbl_tran
+        where id = #{id,jdbcType=CHAR}
+    </select>
+    <select id="getCounts" resultType="java.lang.Integer">
+        select
+        count(*)
+        from tbl_tran t
+        join tbl_user u
+        on t.owner=u.id
+        join tbl_customer cus
+        on t.customer_Id=cus.id
+        left join tbl_contacts con
+        on t.contacts_Id=con.id
+        left join tbl_activity a
+        on t.activity_Id=a.id
+        <where>
+            <if test="name !=null and name!=''">
+                 t.name like "%"#{name}"%"
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like "%"#{owner}"%"
+            </if>
+            <if test="customerId !=null and customerId!=''">
+                and cus.name like "%"#{customerId}"%"
+            </if>
+            <if test="contactsId !=null and contactsId!=''">
+                and con.name like "%"#{contactsId}"%"
+            </if>
+            <if test="stage !=null and stage!=''">
+                and t.stage =#{stage}
+            </if>
+            <if test="type !=null and type!=''">
+                and t.type =#{type}
+            </if>
+            <if test="source !=null and source!=''">
+                and t.source =#{source}
+            </if>
+
+        </where>
+        order by t.create_Time desc
+    </select>
+    <select id="selectiveTrans" resultType="com.zx.crm.workbench.model.Tran">
+        select
+        t.id, u.name as owner, t.money, t.name, t.expected_Date, cus.name as customer_Id, t.stage, t.type, t.source,
+        a.name as activity_Id,con.full_name as contacts_Id, t.create_By, t.create_Time, t.edit_By, t.edit_Time,
+        t.description,
+        t.contact_Summary,t.next_Contact_Time
+        from tbl_tran t
+        join tbl_user u
+        on t.owner=u.id
+        join tbl_customer cus
+        on t.customer_Id = cus.id
+        left join tbl_contacts con
+        on t.contacts_Id=con.id
+        left join tbl_activity a
+        on t.activity_Id=a.id
+        <where>
+            <if test="name !=null and name!=''">
+                t.name like "%"#{name}"%"
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like "%"#{owner}"%"
+            </if>
+            <if test="customerId !=null and customerId!=''">
+                and cus.name like "%"#{customerId}"%"
+            </if>
+            <if test="contactsId !=null and contactsId!=''">
+                and con.name like "%"#{contactsId}"%"
+            </if>
+            <if test="stage !=null and stage!=''">
+                and t.stage =#{stage}
+            </if>
+            <if test="type !=null and type!=''">
+                and t.type =#{type}
+            </if>
+            <if test="source !=null and source!=''">
+                and t.source =#{source}
+            </if>
+
+        </where>
+        order by t.create_Time desc
+    </select>
+    <select id="selectTran" resultType="com.zx.crm.workbench.model.Tran">
+        select
+        t.id, u.name as owner, t.money, t.name, t.expected_Date, cus.name as customer_Id, t.stage, t.type, t.source,
+        a.name as activity_Id,con.full_name as contacts_Id, t.create_By, t.create_Time, t.edit_By, t.edit_Time,
+        t.description,
+        t.contact_Summary,t.next_Contact_Time
+        from tbl_tran t
+        join tbl_user u
+        on t.owner=u.id
+        join tbl_customer cus
+        on t.customer_Id = cus.id
+        left join tbl_contacts con
+        on t.contacts_Id=con.id
+        left join tbl_activity a
+        on t.activity_Id=a.id
+        where t.id=#{id}
+    </select>
+    <select id="getCharts" resultType="java.util.Map">
+        select count(*) as value ,stage as name
+        from tbl_tran
+        group by stage
+        order by stage
+    </select>
+    <select id="getTotal" resultType="int">
+
+        select count(*) from tbl_tran
+
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from tbl_tran
+    where id = #{id,jdbcType=CHAR}
+  </delete>
+    <insert id="insert" parameterType="com.zx.crm.workbench.model.Tran">
+    insert into tbl_tran (id, owner, money, name, 
+      expected_Date, customer_Id, stage, 
+      type, source, activity_Id, 
+      contacts_Id, create_By, create_Time, 
+      edit_By, edit_Time, description, 
+      contact_Summary, next_Contact_Time)
+    values (#{id,jdbcType=CHAR}, #{owner,jdbcType=CHAR}, #{money,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{expectedDate,jdbcType=CHAR}, #{customerId,jdbcType=CHAR}, #{stage,jdbcType=VARCHAR}, 
+      #{type,jdbcType=VARCHAR}, #{source,jdbcType=VARCHAR}, #{activityId,jdbcType=CHAR}, 
+      #{contactsId,jdbcType=CHAR}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=CHAR}, 
+      #{editBy,jdbcType=VARCHAR}, #{editTime,jdbcType=CHAR}, #{description,jdbcType=VARCHAR}, 
+      #{contactSummary,jdbcType=VARCHAR}, #{nextContactTime,jdbcType=CHAR})
+  </insert>
+    <insert id="insertSelective" parameterType="com.zx.crm.workbench.model.Tran">
+        insert into tbl_tran
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="owner != null">
+                owner,
+            </if>
+            <if test="money != null">
+                money,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="expectedDate != null">
+                expected_Date,
+            </if>
+            <if test="customerId != null">
+                customer_Id,
+            </if>
+            <if test="stage != null">
+                stage,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+            <if test="source != null">
+                source,
+            </if>
+            <if test="activityId != null">
+                activity_Id,
+            </if>
+            <if test="contactsId != null">
+                contacts_Id,
+            </if>
+            <if test="createBy != null">
+                create_By,
+            </if>
+            <if test="createTime != null">
+                create_Time,
+            </if>
+            <if test="editBy != null">
+                edit_By,
+            </if>
+            <if test="editTime != null">
+                edit_Time,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="contactSummary != null">
+                contact_Summary,
+            </if>
+            <if test="nextContactTime != null">
+                next_Contact_Time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=CHAR},
+            </if>
+            <if test="owner != null">
+                #{owner,jdbcType=CHAR},
+            </if>
+            <if test="money != null">
+                #{money,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="expectedDate != null">
+                #{expectedDate,jdbcType=CHAR},
+            </if>
+            <if test="customerId != null">
+                #{customerId,jdbcType=CHAR},
+            </if>
+            <if test="stage != null">
+                #{stage,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="source != null">
+                #{source,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null">
+                #{activityId,jdbcType=CHAR},
+            </if>
+            <if test="contactsId != null">
+                #{contactsId,jdbcType=CHAR},
+            </if>
+            <if test="createBy != null">
+                #{createBy,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=CHAR},
+            </if>
+            <if test="editBy != null">
+                #{editBy,jdbcType=VARCHAR},
+            </if>
+            <if test="editTime != null">
+                #{editTime,jdbcType=CHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="contactSummary != null">
+                #{contactSummary,jdbcType=VARCHAR},
+            </if>
+            <if test="nextContactTime != null">
+                #{nextContactTime,jdbcType=CHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.zx.crm.workbench.model.Tran">
+        update tbl_tran
+        <set>
+            <if test="owner != null">
+                owner = #{owner,jdbcType=CHAR},
+            </if>
+            <if test="money != null">
+                money = #{money,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="expectedDate != null">
+                expected_Date = #{expectedDate,jdbcType=CHAR},
+            </if>
+            <if test="customerId != null">
+                customer_Id = #{customerId,jdbcType=CHAR},
+            </if>
+            <if test="stage != null">
+                stage = #{stage,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                type = #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="source != null">
+                source = #{source,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null">
+                activity_Id = #{activityId,jdbcType=CHAR},
+            </if>
+            <if test="contactsId != null">
+                contacts_Id = #{contactsId,jdbcType=CHAR},
+            </if>
+            <if test="createBy != null">
+                create_By = #{createBy,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_Time = #{createTime,jdbcType=CHAR},
+            </if>
+            <if test="editBy != null">
+                edit_By = #{editBy,jdbcType=VARCHAR},
+            </if>
+            <if test="editTime != null">
+                edit_Time = #{editTime,jdbcType=CHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="contactSummary != null">
+                contact_Summary = #{contactSummary,jdbcType=VARCHAR},
+            </if>
+            <if test="nextContactTime != null">
+                next_Contact_Time = #{nextContactTime,jdbcType=CHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=CHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.zx.crm.workbench.model.Tran">
+    update tbl_tran
+    set owner = #{owner,jdbcType=CHAR},
+      money = #{money,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      expected_Date = #{expectedDate,jdbcType=CHAR},
+      customer_Id = #{customerId,jdbcType=CHAR},
+      stage = #{stage,jdbcType=VARCHAR},
+      type = #{type,jdbcType=VARCHAR},
+      source = #{source,jdbcType=VARCHAR},
+      activity_Id = #{activityId,jdbcType=CHAR},
+      contacts_Id = #{contactsId,jdbcType=CHAR},
+      create_By = #{createBy,jdbcType=VARCHAR},
+      create_Time = #{createTime,jdbcType=CHAR},
+      edit_By = #{editBy,jdbcType=VARCHAR},
+      edit_Time = #{editTime,jdbcType=CHAR},
+      description = #{description,jdbcType=VARCHAR},
+      contact_Summary = #{contactSummary,jdbcType=VARCHAR},
+      next_Contact_Time = #{nextContactTime,jdbcType=CHAR}
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

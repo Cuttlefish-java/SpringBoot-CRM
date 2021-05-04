@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.crm.workbench.mapper.ActivityRemarkMapper">
+  <resultMap id="BaseResultMap" type="com.zx.crm.workbench.model.ActivityRemark">
+    <id column="id" jdbcType="CHAR" property="id" />
+    <result column="note_Content" jdbcType="VARCHAR" property="noteContent" />
+    <result column="create_Time" jdbcType="CHAR" property="createTime" />
+    <result column="create_By" jdbcType="VARCHAR" property="createBy" />
+    <result column="edit_Time" jdbcType="CHAR" property="editTime" />
+    <result column="edit_By" jdbcType="VARCHAR" property="editBy" />
+    <result column="edit_Flag" jdbcType="CHAR" property="editFlag" />
+    <result column="activity_Id" jdbcType="CHAR" property="activityId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, note_Content, create_Time, create_By, edit_Time, edit_By, edit_Flag, activity_Id
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_activity_remark
+    where id = #{id,jdbcType=CHAR}
+  </select>
+  <select id="selectActivityRemarkByActivityId" parameterType="java.lang.String" resultType="com.zx.crm.workbench.model.ActivityRemark">
+    select
+    <include refid="Base_Column_List" />
+    from tbl_activity_remark
+    where activity_Id = #{activityId,jdbcType=CHAR}
+    order by create_Time,edit_Time desc
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from tbl_activity_remark
+    where id = #{id,jdbcType=CHAR}
+  </delete>
+  <select id="getCountsByActivityId" parameterType="java.lang.String" resultType="int">
+    select
+    count(*)
+    from tbl_activity_remark
+    where id in
+    <foreach collection="array" item="activity_remark_id" index="index" open="(" close=")" separator=",">
+    #{activity_remark_id}
+    </foreach>
+  </select>
+  <delete id="deleteByActivitiesId" parameterType="java.util.Arrays">
+    delete
+    from tbl_activity_remark
+    where id in
+    <foreach collection="array" item="activity_remark_id" index="index" open="(" close=")" separator=",">
+      #{activity_remark_id}
+    </foreach>
+  </delete>
+  <insert id="insert" parameterType="com.zx.crm.workbench.model.ActivityRemark">
+    insert into tbl_activity_remark (id, note_Content, create_Time, 
+      create_By, edit_Time, edit_By, 
+      edit_Flag, activity_Id)
+    values (#{id,jdbcType=CHAR}, #{noteContent,jdbcType=VARCHAR}, #{createTime,jdbcType=CHAR}, 
+      #{createBy,jdbcType=VARCHAR}, #{editTime,jdbcType=CHAR}, #{editBy,jdbcType=VARCHAR}, 
+      #{editFlag,jdbcType=CHAR}, #{activityId,jdbcType=CHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.zx.crm.workbench.model.ActivityRemark">
+    insert into tbl_activity_remark
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="noteContent != null">
+        note_Content,
+      </if>
+      <if test="createTime != null">
+        create_Time,
+      </if>
+      <if test="createBy != null">
+        create_By,
+      </if>
+      <if test="editTime != null">
+        edit_Time,
+      </if>
+      <if test="editBy != null">
+        edit_By,
+      </if>
+      <if test="editFlag != null">
+        edit_Flag,
+      </if>
+      <if test="activityId != null">
+        activity_Id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="noteContent != null">
+        #{noteContent,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=CHAR},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="editTime != null">
+        #{editTime,jdbcType=CHAR},
+      </if>
+      <if test="editBy != null">
+        #{editBy,jdbcType=VARCHAR},
+      </if>
+      <if test="editFlag != null">
+        #{editFlag,jdbcType=CHAR},
+      </if>
+      <if test="activityId != null">
+        #{activityId,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.zx.crm.workbench.model.ActivityRemark">
+    update tbl_activity_remark
+    <set>
+      <if test="noteContent != null">
+        note_Content = #{noteContent,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_Time = #{createTime,jdbcType=CHAR},
+      </if>
+      <if test="createBy != null">
+        create_By = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="editTime != null">
+        edit_Time = #{editTime,jdbcType=CHAR},
+      </if>
+      <if test="editBy != null">
+        edit_By = #{editBy,jdbcType=VARCHAR},
+      </if>
+      <if test="editFlag != null">
+        edit_Flag = #{editFlag,jdbcType=CHAR},
+      </if>
+      <if test="activityId != null">
+        activity_Id = #{activityId,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.zx.crm.workbench.model.ActivityRemark">
+    update tbl_activity_remark
+    set note_Content = #{noteContent,jdbcType=VARCHAR},
+      create_Time = #{createTime,jdbcType=CHAR},
+      create_By = #{createBy,jdbcType=VARCHAR},
+      edit_Time = #{editTime,jdbcType=CHAR},
+      edit_By = #{editBy,jdbcType=VARCHAR},
+      edit_Flag = #{editFlag,jdbcType=CHAR},
+      activity_Id = #{activityId,jdbcType=CHAR}
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>
