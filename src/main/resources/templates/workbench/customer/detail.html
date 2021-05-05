@@ -123,7 +123,9 @@
                         $.ajax({
                             url:"workbench/customer/deleteCustomer",
                             type:"get",
-                            data:id,
+                            data:{
+                                "id":id
+                            },
                             success:function (data) {
                                 if (data){
                                     alert("删除成功")
@@ -136,6 +138,28 @@
                     }
             })
             showCustomerRemarkList()
+            $("#saveRemarks").click(function () {
+                var noteContent = $("#remark").val()
+                $.ajax({
+                    url: "workbench/customer/saveRemark",
+                    data: {
+                        "customerId": $("#customerId").val(),
+                        "noteContent":noteContent,
+                    },
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data){
+                            alert("添加成功")
+                            $("#remark").val("")
+                            showCustomerRemarkList()
+
+                        }else {
+                            alert("添加失败")
+                        }
+                    }
+                })
+            })
         });
         function showCustomerRemarkList() {
             $.ajax({
@@ -165,6 +189,21 @@
                     })
                     //<small style="color: gray;">'+n.editFlag==0?n.createTime:n.editTime+"由"+n.editFlag==0?n.createBy:n.editBy+'</small>
                     $("#showCustomerRemarkList").html(html)
+                }
+            })
+        }
+        function editCustomerRemark(id) {
+
+            $.ajax({
+                url: "workbench/customer/editCustomerRemark",
+                data: {
+                    "id": id,
+                },
+                type: "get",
+                dataType: "json",
+                success: function (data) {
+                    alert(data.noteContent)
+                    $("#editRemarkModal").modal("show")
                 }
             })
         }
@@ -521,7 +560,34 @@
         <div style="height: 1px; width: 850px; background: #D5D5D5; position: relative; top: -20px;"></div>
     </div>
 </div>
-
+<div class="modal fade" id="editRemarkModal" role="dialog">
+    <%-- 备注的id --%>
+    <input type="hidden" id="remarkId">
+    <div class="modal-dialog" role="document" style="width: 40%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabelForRemark">修改备注</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="edit-describe" class="col-sm-2 control-label">内容</label>
+                        <div class="col-sm-10" style="width: 81%;">
+                            <textarea class="form-control" rows="3" id="noteContent"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="updateRemarkBtn">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- 备注 -->
 <div id="remarkBody" style="position: relative; top: 10px; left: 40px;">
     <div class="page-header">
@@ -568,7 +634,7 @@
                       placeholder="添加备注..."></textarea>
             <p id="cancelAndSaveBtn" style="position: relative;left: 737px; top: 10px; display: none;">
                 <button id="cancelBtn" type="button" class="btn btn-default">取消</button>
-                <button type="button" class="btn btn-primary">保存</button>
+                <button type="button" class="btn btn-primary" id="saveRemarks">保存</button>
             </p>
         </form>
     </div>

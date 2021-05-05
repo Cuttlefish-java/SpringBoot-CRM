@@ -20,4 +20,8 @@ public interface CustomerService {
     List<CustomerRemark> getRemarks(String customerId);
 
     Customer getCustomerById1(String customerId);
+
+    boolean saveRemark(CustomerRemark customerRemark);
+
+    CustomerRemark getRemark(String id);
 }

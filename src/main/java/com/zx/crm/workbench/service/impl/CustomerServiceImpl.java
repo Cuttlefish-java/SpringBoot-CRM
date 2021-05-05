@@ -46,6 +46,21 @@ public class CustomerServiceImpl implements CustomerService {
         System.out.println(customer);
         return customer;
     }
+    @Transactional
+    @Override
+    public boolean saveRemark(CustomerRemark customerRemark) {
+        int result = customerRemarkMapper.insertSelective(customerRemark);
+        if (result!=1){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public CustomerRemark getRemark(String id) {
+        return customerRemarkMapper.selectByPrimaryKey(id);
+    }
 
     @Transactional
     @Override

@@ -93,4 +93,25 @@ public class CustomerController {
         return map;
     }
 
+    @RequestMapping("/saveRemark")
+    @ResponseBody
+    public boolean saveRemark(CustomerRemark customerRemark,HttpServletRequest request){
+
+        User user = (User) request.getSession().getAttribute("user");
+        customerRemark.setCreateTime(DateTimeUtil.getSysTime());
+        customerRemark.setCreateBy(user.getName());
+        customerRemark.setId(UUIDUtil.getUUID());
+        customerRemark.setEditFlag("0");
+        System.out.println(customerRemark);
+        boolean flag = customerService.saveRemark(customerRemark);
+        return flag;
+    }
+    @RequestMapping("/editCustomerRemark")
+    @ResponseBody
+    public CustomerRemark saveRemark(String id){
+        CustomerRemark customerRemark = customerService.getRemark(id);
+        return customerRemark;
+    }
+
+
 }
