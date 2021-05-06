@@ -4,8 +4,10 @@ import com.github.pagehelper.PageHelper;
 import com.zx.crm.vo.PaginationVO;
 import com.zx.crm.workbench.mapper.CustomerMapper;
 import com.zx.crm.workbench.mapper.CustomerRemarkMapper;
+import com.zx.crm.workbench.mapper.TranMapper;
 import com.zx.crm.workbench.model.Customer;
 import com.zx.crm.workbench.model.CustomerRemark;
+import com.zx.crm.workbench.model.Tran;
 import com.zx.crm.workbench.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerMapper customerMapper;
     @Autowired
     private CustomerRemarkMapper customerRemarkMapper;
+    @Autowired
+    private TranMapper tranMapper;
 
     @Transactional
     @Override
@@ -60,6 +64,48 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerRemark getRemark(String id) {
         return customerRemarkMapper.selectByPrimaryKey(id);
+    }
+    @Transactional
+    @Override
+    public boolean updateCustomerRemark(CustomerRemark customerRemark) {
+        CustomerRemark customerRemark1 = customerRemarkMapper.selectByPrimaryKey(customerRemark.getId());
+        customerRemark1.setNoteContent(customerRemark.getNoteContent());
+        customerRemark1.setEditBy(customerRemark.getEditBy());
+        customerRemark1.setEditTime(customerRemark.getEditTime());
+        customerRemark1.setEditFlag(customerRemark.getEditFlag());
+        int result = customerRemarkMapper.updateByPrimaryKeySelective(customerRemark1);
+        if (result!=1){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return false;
+        }
+
+        return true;
+    }
+    @Transactional
+    @Override
+    public boolean deleteCustomerRemark(String id) {
+        int result = customerRemarkMapper.deleteByPrimaryKey(id);
+        if (result!=1){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public List<Tran> showTranSactionList(String id) {
+        List<Tran> tranList = tranMapper.selectTranByCustomerId(id);
+        return tranList;
+    }
+
+    @Override
+    public boolean deleteTranSactionById(String id) {
+        int result = tranMapper.deleteByPrimaryKey(id);
+        if (result!=1){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return false;
+        }
+        return true;
     }
 
     @Transactional

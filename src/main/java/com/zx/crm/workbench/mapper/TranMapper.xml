@@ -32,6 +32,7 @@
         from tbl_tran
         where id = #{id,jdbcType=CHAR}
     </select>
+
     <select id="getCounts" resultType="java.lang.Integer">
         select
         count(*)
@@ -67,6 +68,28 @@
                 and t.source =#{source}
             </if>
 
+        </where>
+        order by t.create_Time desc
+    </select>
+    <select id="selectTranByCustomerId" resultType="com.zx.crm.workbench.model.Tran">
+        select
+        t.id, u.name as owner, t.money, t.name, t.expected_Date, cus.name as customer_Id, t.stage, t.type, t.source,
+        a.name as activity_Id,con.full_name as contacts_Id, t.create_By, t.create_Time, t.edit_By, t.edit_Time,
+        t.description,
+        t.contact_Summary,t.next_Contact_Time
+        from tbl_tran t
+        join tbl_user u
+        on t.owner=u.id
+        join tbl_customer cus
+        on t.customer_Id = cus.id
+        left join tbl_contacts con
+        on t.contacts_Id=con.id
+        left join tbl_activity a
+        on t.activity_Id=a.id
+        <where>
+            <if test="id !=null and id!=''">
+                t.customer_Id =#{id}
+            </if>
         </where>
         order by t.create_Time desc
     </select>
@@ -139,6 +162,7 @@
         select count(*) from tbl_tran
 
     </select>
+
     <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
     delete from tbl_tran
     where id = #{id,jdbcType=CHAR}

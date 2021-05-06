@@ -26,4 +26,6 @@ public interface TranMapper {
 
     List<Map<String, Object>> getCharts();
     int getTotal();
+
+    List<Tran> selectTranByCustomerId(String id);
 }

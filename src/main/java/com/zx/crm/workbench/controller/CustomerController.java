@@ -7,8 +7,10 @@ import com.zx.crm.util.UUIDUtil;
 import com.zx.crm.vo.PaginationVO;
 import com.zx.crm.workbench.model.Customer;
 import com.zx.crm.workbench.model.CustomerRemark;
+import com.zx.crm.workbench.model.Tran;
 import com.zx.crm.workbench.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +28,8 @@ public class CustomerController {
     private CustomerService customerService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RedisTemplate<Object,Object> redisTemplate;
     @RequestMapping("/index")
     public String workbenchCustomerIndex(){
 
@@ -113,5 +117,40 @@ public class CustomerController {
         return customerRemark;
     }
 
+    @RequestMapping("/updateCustomerRemark")
+    @ResponseBody
+    public boolean updateCustomerRemark(CustomerRemark customerRemark,HttpServletRequest request){
+        User user = (User) request.getSession().getAttribute("user");
+        customerRemark.setEditBy(user.getName());
+        customerRemark.setEditTime(DateTimeUtil.getSysTime());
+        customerRemark.setEditFlag("1");
+        System.out.println(customerRemark);
+        boolean flag = customerService.updateCustomerRemark(customerRemark);
+        return flag;
+    }
+
+    @RequestMapping("/deleteCustomerRemark")
+    @ResponseBody
+    public boolean deleteCustomerRemark(String id){
+        boolean flag = customerService.deleteCustomerRemark(id);
+        return flag;
+    }
+
+    @RequestMapping("/showTranSactionList")
+    @ResponseBody
+    public List<Tran> showTranSactionList(String id){
+        List<Tran> tranList = customerService.showTranSactionList(id);
+        for (Tran tran:tranList){
+            String possibility = (String) redisTemplate.opsForHash().get("possibility", tran.getStage());
+            tran.setPossibility(possibility);
+        }
+        return tranList;
+    }
+    @RequestMapping("/deleteTranSactionById")
+    @ResponseBody
+    public boolean deleteTranSactionById(String id){
+        boolean flag = customerService.deleteTranSactionById(id);
+        return flag;
+    }
 
 }

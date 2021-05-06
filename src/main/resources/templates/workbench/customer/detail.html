@@ -160,6 +160,29 @@
                     }
                 })
             })
+            $("#updateRemarkBtn").click(function () {
+                var noteContent = $("#noteContent").val();
+                var id = $("#remarkId").val();
+                $.ajax({
+                    url: "workbench/customer/updateCustomerRemark",
+                    data: {
+                        "id": id,
+                        "noteContent":noteContent
+                    },
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data){
+                            alert("更新成功")
+                            $("#remarkId").val("")
+                            $("#editRemarkModal").modal("hide")
+                            showCustomerRemarkList()
+                        }
+
+                    }
+                })
+            })
+            showTranSactionList()
         });
         function showCustomerRemarkList() {
             $.ajax({
@@ -192,6 +215,72 @@
                 }
             })
         }
+        function deleteCustomerRemark(id){
+            if (confirm("确定要删除这条客户备注吗?")){
+                $.ajax({
+                    url: "workbench/customer/deleteCustomerRemark",
+                    data: {
+                        "id": id,
+                    },
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data){
+                            alert("删除成功")
+                            showCustomerRemarkList()
+                        }else {
+                            alert("删除失败")
+                        }
+                    }
+                })
+            }
+        }
+        function showTranSactionList() {
+            $.ajax({
+                url: "workbench/customer/showTranSactionList",
+                data: {
+                    "id": $("#customerId").val()
+                },
+                type: "get",
+                dataType: "json",
+                success: function (data) {
+                    var html = '';
+                    $.each(data,function (i,n) {
+                        html+= '<tr>';
+                        html+= '<td><a href="workbench/transaction/detail?id="'+n.id+' style="text-decoration: none;">'+n.name+'</a></td>';
+                        html+= '<td>'+n.money+'</td>';
+                        html+= '<td>'+n.stage+'</td>';
+                        html+= '<td>'+n.possibility+'</td>';
+                        html+= '<td>'+n.expectedDate+'</td>';
+                        html+= '<td>'+n.type+'</td>';
+                        html+= '<td><a href="javascript:void(0);"  onclick="deleteTranSaction(\''+n.id+'\')" style="text-decoration: none;"><span class="glyphicon glyphicon-remove"></span>删除</a></td>';
+                        html+= '</tr>';
+                    })
+                    $("#transactionBody").html(html)
+                }
+            })
+        }
+        function deleteTranSaction(id){
+            $("#removeTransactionModal").modal("show")
+            $("#deleteTranSaction").click(function () {
+                $.ajax({
+                    url: "workbench/customer/deleteTranSactionById",
+                    data: {
+                        "id": id,
+                    },
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data){
+                            $("#editRemarkModal").modal("hide")
+                            alert("删除成功")
+                            showTranSactionList()
+                        }
+
+                    }
+                })
+            })
+        }
         function editCustomerRemark(id) {
 
             $.ajax({
@@ -202,7 +291,8 @@
                 type: "get",
                 dataType: "json",
                 success: function (data) {
-                    alert(data.noteContent)
+                    $("#noteContent").val(data.noteContent)
+                    $("#remarkId").val(data.id)
                     $("#editRemarkModal").modal("show")
                 }
             })
@@ -227,7 +317,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal">删除</button>
+                <button type="button" class="btn btn-danger">删除</button>
             </div>
         </div>
     </div>
@@ -248,7 +338,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal">删除</button>
+                <button type="button" class="btn btn-danger" id="deleteTranSaction" data-dismiss="modal">删除</button>
             </div>
         </div>
     </div>
@@ -594,39 +684,6 @@
         <h4>备注</h4>
     </div>
 
-    <!--&lt;!&ndash; 备注1 &ndash;&gt;
-    <div class="remarkDiv" style="height: 60px;">
-        <img title="zhangsan" src="../../image/user-thumbnail.png" style="width: 30px; height:30px;">
-        <div style="position: relative; top: -40px; left: 40px;">
-            <h5>哎呦！</h5>
-            <font color="gray">联系人</font> <font color="gray">-</font> <b>李四先生-北京河北祥智</b> <small style="color: gray;">
-            2017-01-22 10:10:10 由zhangsan</small>
-            <div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">
-                <a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-edit"
-                                                                   style="font-size: 20px; color: #E6E6E6;"></span></a>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-remove"
-                                                                   style="font-size: 20px; color: #E6E6E6;"></span></a>
-            </div>
-        </div>
-    </div>
-
-    &lt;!&ndash; 备注2 &ndash;&gt;
-    <div class="remarkDiv" style="height: 60px;">
-        <img title="zhangsan" src="../../image/user-thumbnail.png" style="width: 30px; height:30px;">
-        <div style="position: relative; top: -40px; left: 40px;">
-            <h5>呵呵！</h5>
-            <font color="gray">联系人</font> <font color="gray">-</font> <b>李四先生-北京河北祥智</b> <small style="color: gray;">
-            2017-01-22 10:20:10 由zhangsan</small>
-            <div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">
-                <a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-edit"
-                                                                   style="font-size: 20px; color: #E6E6E6;"></span></a>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-remove"
-                                                                   style="font-size: 20px; color: #E6E6E6;"></span></a>
-            </div>
-        </div>
-    </div>-->
     <div id="showCustomerRemarkList"></div>
     <div id="remarkDiv" style="background-color: #E6E6E6; width: 870px; height: 90px;">
         <form role="form" style="position: relative;top: 10px; left: 10px;">
@@ -659,17 +716,7 @@
                     <td></td>
                 </tr>
                 </thead>
-                <tbody>
-                <tr>
-                    <td><a th:href="@{workbench/transaction/detail}" style="text-decoration: none;">河北祥智-交易01</a></td>
-                    <td>5,000</td>
-                    <td>谈判/复审</td>
-                    <td>90</td>
-                    <td>2017-02-07</td>
-                    <td>新业务</td>
-                    <td><a href="javascript:void(0);" data-toggle="modal" data-target="#removeTransactionModal"
-                           style="text-decoration: none;"><span class="glyphicon glyphicon-remove"></span>删除</a></td>
-                </tr>
+                <tbody id="transactionBody">
                 </tbody>
             </table>
         </div>
